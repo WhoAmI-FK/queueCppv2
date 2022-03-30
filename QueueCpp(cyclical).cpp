@@ -1,5 +1,4 @@
 ﻿#include <iostream>
-
 namespace queueV2 {
     template<typename T, class _Alloc = std::allocator<T>>
     class queue {
@@ -16,9 +15,23 @@ namespace queueV2 {
         queue()
             : _elements(0),_capacity(20),_queue(_Alloc().allocate(20)),_first(0)
         {
-
+            
         }
-
+        queue(const _que& copy)
+            :_elements(copy._elements),
+            _capacity(copy._capacity+20),
+            _queue(_Alloc().allocate(copy._capacity+20))
+        {
+            if (copy != nullptr) {
+                for (int i = 0; i < copy._elements; ++i) {
+                    _Alloc().consttruct(&_queue[i], *(copy._queue + i));
+                }
+            }
+            else throw std::invalid_argument("Nullptr passed as an argument");
+        }
+        size_type size() const {
+            return _elements;
+        }
         void push(_val_type val) {
             if (_elements == _capacity) {
                 extend();
@@ -27,7 +40,7 @@ namespace queueV2 {
             _Alloc().construct(&_queue[insertTo], val);
             _elements++;
         }
-        bool empty() {
+        bool empty() const{
             return _elements == 0;
         }
         ~queue() {
@@ -67,5 +80,10 @@ namespace queueV2 {
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    try {
+        // code
+    }
+    catch (std::exception e) {
+        std::cout << e.what() << std::endl;
+    }
 }
