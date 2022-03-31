@@ -12,22 +12,39 @@ namespace queueV2 {
         typedef const T* const_iterator;
         typedef std::size_t size_type;
 
-        queue()
+        explicit queue()
             : _elements(0),_capacity(20),_queue(_Alloc().allocate(20)),_first(0)
         {
             
         }
-        queue(const _que& copy)
+        explicit queue(const _que& copy)
             :_elements(copy._elements),
             _capacity(copy._capacity+20),
-            _queue(_Alloc().allocate(copy._capacity+20))
+            _queue(_Alloc().allocate(copy._capacity+20)),
+            _first(copy._first)
         {
-            if (copy != nullptr) {
                 for (int i = 0; i < copy._elements; ++i) {
-                    _Alloc().consttruct(&_queue[i], *(copy._queue + i));
+                    _Alloc().construct(&_queue[i], *(copy._queue + i));
                 }
+        }
+        _que& operator=(const _que& rhs) {
+            if (this == &rhs) {
+                throw std::invalid_argument("Self-assignment error");
             }
-            else throw std::invalid_argument("Nullptr passed as an argument");
+            else {
+                for (size_type i = 0; i < _capacity; ++i) {
+                    _Alloc().destroy(_queue + i);
+               }
+                _Alloc().deallocate(_queue, _capacity);
+                _queue = _Alloc().allocate(rhs._capacity);
+                for (size_type i = 0; i < rhs._elements; ++i) {
+                    _Alloc().construct(&_queue[i], rhs._queue[i]);
+                }
+                _elements = rhs._elements;
+                _capacity = rhs._capacity;
+                _first = rhs._first;
+            }
+            return *this;
         }
         size_type size() const {
             return _elements;
@@ -56,9 +73,13 @@ namespace queueV2 {
             }
             else throw std::runtime_error("Trying to pop empty queue");
         }
-        _val_type front() {
+        _val_type& front() {
             return _queue[_first];
         }
+        _val_type& back() {
+            return  _queue[((_elements - 1) % _capacity)];
+        }
+     
     private:
         size_type _elements, _capacity,_first;
         T* _queue;
@@ -86,4 +107,6 @@ int main()
     catch (std::exception e) {
         std::cout << e.what() << std::endl;
     }
+    return 0;
+
 }
